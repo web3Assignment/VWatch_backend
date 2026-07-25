@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Environment Variables (Sensitive)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Application Logs
+watch-party-logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database & Docker Files
+.db_data/
+mysql_data/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Reference Architecture Document
+ARCHITECTURE.md
