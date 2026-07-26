@@ -91,11 +91,37 @@ const getPlaybackLogs = async (roomId) => {
   });
 };
 
+const deleteRoom = async (roomId, userId) => {
+  const room = await Room.findByPk(roomId);
+  if (!room) {
+    return { status: 404, message: 'Room not found.' };
+  }
+
+  // Only the host can delete the room
+  if (room.hostId !== userId) {
+    return { status: 403, message: 'Permission Denied: Only the Host can delete this room.' };
+  }
+
+  // Delete related data first to prevent foreign key errors
+  await Participant.destroy({ where: { roomId } });
+  await ChatMessage.destroy({ where: { roomId } });
+  await PlaybackLog.destroy({ where: { roomId } });
+  await room.destroy();
+
+  // Remove from the in-memory WebSocket cache if active
+  const RoomManager = require('../websockets/RoomManager.js');
+  const roomManager = RoomManager.getInstance();
+  roomManager.deleteRoom(roomId);
+
+  return { status: 200, success: true, message: 'Room deleted successfully.' };
+};
+
 module.exports = {
   createRoom,
   getRoomById,
   getActiveRooms,
   saveChatMessage,
   getChatHistory,
-  getPlaybackLogs
+  getPlaybackLogs,
+  deleteRoom
 };

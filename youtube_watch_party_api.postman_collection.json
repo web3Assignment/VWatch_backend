@@ -219,6 +219,32 @@
             "description": "Get the video synchronization action and status change logs of a specific room."
           },
           "response": []
+        },
+        {
+          "name": "Delete Room",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/:roomId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms",
+                ":roomId"
+              ],
+              "variable": [
+                {
+                  "key": "roomId",
+                  "value": "{{roomId}}",
+                  "description": "The unique ID (UUID) of the watch room to delete"
+                }
+              ]
+            },
+            "description": "Allows the Host of a room to delete it, clearing all active participant states and database entries."
+          },
+          "response": []
         }
       ]
     }

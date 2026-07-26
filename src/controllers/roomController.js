@@ -64,10 +64,31 @@ const getPlaybackLogs = async (req, res) => {
   }
 };
 
+const remove = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const userId = req.user.id;
+
+    const result = await roomService.deleteRoom(roomId, userId);
+
+    if (result.success) {
+      logger.info(`"roomController.js","remove()","Room deleted successfully: ${roomId} by User: ${userId}"`);
+      return res.status(200).json({ success: true, message: result.message });
+    } else {
+      logger.warn(`"roomController.js","remove()","Delete failed for Room: ${roomId} by User: ${userId}. Reason: ${result.message}"`);
+      return res.status(result.status).json({ success: false, message: result.message });
+    }
+  } catch (error) {
+    logger.error(`"roomController.js","remove()","Error: ${error.message}"`);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   create,
   list,
   getDetails,
   getChatHistory,
-  getPlaybackLogs
+  getPlaybackLogs,
+  remove
 };
