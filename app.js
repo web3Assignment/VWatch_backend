@@ -41,18 +41,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Apply rate limiting to all requests (except api-docs to prevent UI blocking)
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Too many requests, please try again later.' }
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100,
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   message: { success: false, message: 'Too many requests, please try again later.' }
+// });
 
 // Swagger UI Route (placed before rate limiter to prevent limits on doc pages)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use(limiter);
+// app.use(limiter);
 
 // Mount API routes
 app.use('/api/v1', routes);
