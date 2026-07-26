@@ -21,7 +21,10 @@ app.use((req, res, next) => {
 });
 
 // Enable CORS
-const allowedOrigins = ['http://localhost:5173'];
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://vchat-sigma.vercel.app'
+];
 const corsOrigin = process.env.CORS_ORIGIN || '*';
 
 app.use(cors({

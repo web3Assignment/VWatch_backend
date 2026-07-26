@@ -17,9 +17,11 @@ async function startServer() {
     await sequelize.sync({ alter: false });
     logger.info('"server.js","startServer()","Database models synchronized"');
 
-    // 2. Initialize HTTP server and couple with Socket.io
     const server = http.createServer(app);
-    const allowedOrigins = ['http://localhost:5173'];
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://vchat-sigma.vercel.app'
+    ];
     const corsOrigin = process.env.CORS_ORIGIN || '*';
 
     const io = new Server(server, {
