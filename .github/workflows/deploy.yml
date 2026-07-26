@@ -77,10 +77,9 @@ jobs:
           if pm2 describe VWatch_mgmt_backend >/dev/null 2>&1; then
             pm2 restart VWatch_mgmt_backend --update-env
           else
-            pm2 start npm \
+            pm2 start server.js \
               --name VWatch_mgmt_backend \
-              --cwd /home/ubuntu/VWatch_mgmt_backend \
-              -- start
+              --cwd /home/ubuntu/VWatch_mgmt_backend
           fi
 
           pm2 save
