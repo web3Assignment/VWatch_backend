@@ -317,6 +317,23 @@ const registerSocketHandlers = (io) => {
       }
     });
 
+    // Event: Reaction (Ephemeral)
+    socket.on('reaction', ({ emoji, userId, username }) => {
+      try {
+        const roomId = socket.roomId;
+        if (!roomId) return;
+        const reactionPayload = {
+          emoji,
+          userId,
+          username,
+          roomId
+        };
+        io.to(roomId).emit('reaction', reactionPayload);
+      } catch (error) {
+        logger.error(`"socketHandlers.js","reaction","Error: ${error.message}"`);
+      }
+    });
+
     // Event: Chat message
     socket.on('send_chat', async ({ message }) => {
       try {
