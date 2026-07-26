@@ -1,0 +1,92 @@
+name: Deploy VWatch Backend to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.1.0
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Deploy to EC2
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_IP_ADDRESS: ${{ secrets.EC2_IP_ADDRESS }}
+          GIT_REPO: ${{ secrets.GIT_REPO }}
+        run: |
+          echo "$EC2_SSH_KEY" > VWatch.pem
+          chmod 400 VWatch.pem
+
+          # Pass local environment variables into the SSH session safely
+          ssh -o StrictHostKeyChecking=no -i VWatch.pem ubuntu@$EC2_IP_ADDRESS "GIT_REPO='$GIT_REPO' bash -s" << 'EOF'
+
+          set -e
+
+          # Install Git
+          if ! command -v git >/dev/null 2>&1; then
+            sudo apt update
+            sudo apt install -y git
+          fi
+
+          # Install Node.js (only if missing)
+          if ! command -v node >/dev/null 2>&1; then
+            curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+            sudo apt install -y nodejs
+          fi
+
+          # Install PM2 (only if missing)
+          if ! command -v pm2 >/dev/null 2>&1; then
+            sudo npm install -g pm2
+          fi
+
+          # Add GitHub to known hosts
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+          cd /home/ubuntu
+
+          # Clone repository if it doesn't exist
+          if [ ! -d "VWatch_mgmt_backend" ]; then
+            git clone "$GIT_REPO" VWatch_mgmt_backend
+          fi
+
+          cd /home/ubuntu/VWatch_mgmt_backend
+
+          # Pull latest changes
+          git fetch origin
+          git checkout main
+          git pull origin main
+
+          # Install new dependencies
+          npm install
+
+          # Restart if PM2 app exists, otherwise create it
+          if pm2 describe VWatch_mgmt_backend >/dev/null 2>&1; then
+            pm2 restart VWatch_mgmt_backend --update-env
+          else
+            pm2 start npm \
+              --name VWatch_mgmt_backend \
+              --cwd /home/ubuntu/VWatch_mgmt_backend \
+              -- start
+          fi
+
+          pm2 save
+
+          EOF
+
+      - name: Cleanup
+        if: always()
+        run: rm -f VWatch.pem

@@ -1,0 +1,273 @@
+{
+  "info": {
+    "_postman_id": "8c6c5478-f40b-4654-be8c-ff5d70be52cf",
+    "name": "YouTube Watch Party API",
+    "description": "Postman Collection for the YouTube Watch Party real-time synchronized backend API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"emailAddress\": \"john@example.com\",\n  \"password\": \"securePassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            },
+            "description": "Register a new user with username, email address, and password."
+          },
+          "response": []
+        },
+        {
+          "name": "Log in User",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailAddress\": \"john@example.com\",\n  \"password\": \"securePassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in an existing user and returns a JWT authentication token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Gets the profile details of the currently authenticated user using the Bearer Token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Rooms",
+      "item": [
+        {
+          "name": "Create Watch Room",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Friday Night Anime Party\",\n  \"initialVideoId\": \"dQw4w9WgXcQ\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rooms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms"
+              ]
+            },
+            "description": "Create a new Watch Room. Title is required; initialVideoId is optional."
+          },
+          "response": []
+        },
+        {
+          "name": "List Active Watch Rooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rooms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms"
+              ]
+            },
+            "description": "Retrieves a list of all active Watch Rooms."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Room Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/:roomId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms",
+                ":roomId"
+              ],
+              "variable": [
+                {
+                  "key": "roomId",
+                  "value": "{{roomId}}",
+                  "description": "The unique ID (UUID) of the watch room"
+                }
+              ]
+            },
+            "description": "Get detailed configurations and status of a specific room."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Room Chat History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/:roomId/chat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms",
+                ":roomId",
+                "chat"
+              ],
+              "variable": [
+                {
+                  "key": "roomId",
+                  "value": "{{roomId}}",
+                  "description": "The unique ID (UUID) of the watch room"
+                }
+              ]
+            },
+            "description": "Fetch historical chat messages for a specific room."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Room Playback Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/:roomId/logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rooms",
+                ":roomId",
+                "logs"
+              ],
+              "variable": [
+                {
+                  "key": "roomId",
+                  "value": "{{roomId}}",
+                  "description": "The unique ID (UUID) of the watch room"
+                }
+              ]
+            },
+            "description": "Get the video synchronization action and status change logs of a specific room."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "roomId",
+      "value": "YOUR_ROOM_ID_HERE",
+      "type": "string"
+    }
+  ]
+}
