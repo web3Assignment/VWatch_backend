@@ -31,6 +31,6 @@ mysql_data/
 # OS Files
 .DS_Store
 Thumbs.db
-
+logic.md
 # Reference Architecture Document
 ARCHITECTURE.md

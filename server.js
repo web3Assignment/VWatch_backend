@@ -11,7 +11,7 @@ async function startServer() {
   try {
     // 1. Authenticate and Synchronize Database
     await sequelize.authenticate();
-    logger.info('"server.js","startServer()","Database connected successfully"');
+    logger.info('"server.js","startServer()","VWatch Database connected successfully"');
     
     // Synchronize models (alter: true maps models changes to tables)
     await sequelize.sync({ alter: false });
