@@ -33,7 +33,8 @@ async function startServer() {
           }
           return callback(null, false);
         },
-        methods: ['GET', 'POST']
+        methods: ['GET', 'POST'],
+        credentials: true
       }
     });
 
