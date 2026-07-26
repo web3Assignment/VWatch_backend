@@ -21,8 +21,17 @@ app.use((req, res, next) => {
 });
 
 // Enable CORS
+const allowedOrigins = ['http://localhost:5173'];
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (corsOrigin === '*' || allowedOrigins.includes(origin) || origin === corsOrigin) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

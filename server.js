@@ -19,9 +19,18 @@ async function startServer() {
 
     // 2. Initialize HTTP server and couple with Socket.io
     const server = http.createServer(app);
+    const allowedOrigins = ['http://localhost:5173'];
+    const corsOrigin = process.env.CORS_ORIGIN || '*';
+
     const io = new Server(server, {
       cors: {
-        origin: process.env.CORS_ORIGIN || '*',
+        origin: (origin, callback) => {
+          if (!origin) return callback(null, true);
+          if (corsOrigin === '*' || allowedOrigins.includes(origin) || origin === corsOrigin) {
+            return callback(null, true);
+          }
+          return callback(null, false);
+        },
         methods: ['GET', 'POST']
       }
     });
