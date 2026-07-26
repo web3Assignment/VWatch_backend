@@ -358,9 +358,39 @@ const registerSocketHandlers = (io) => {
           const room = roomManager.getRoom(roomId);
           if (!room) continue;
 
+          const originalHostId = room.hostId;
           room.removeParticipant(user.id);
+          const currentHostId = room.hostId;
 
-          // Update MySQL entry
+          // If the disconnected user was the host and a new host was reassigned
+          if (originalHostId === user.id && currentHostId && currentHostId !== originalHostId) {
+            // Update DBRoom hostId
+            await DBRoom.update(
+              { hostId: currentHostId },
+              { where: { id: roomId } }
+            );
+            // Demote old host in DB
+            await DBParticipant.update(
+              { role: Role.PARTICIPANT },
+              { where: { roomId, userId: user.id } }
+            );
+            // Promote new host in DB
+            await DBParticipant.update(
+              { role: Role.HOST },
+              { where: { roomId, userId: currentHostId } }
+            );
+
+            logger.info(`"socketHandlers.js","disconnecting","Host changed in room ${roomId} from User ${user.username} to User ID ${currentHostId}"`);
+
+            // Broadcast the host change to clients in the room
+            io.to(roomId).emit('role_assigned', {
+              userId: currentHostId,
+              role: Role.HOST,
+              participants: Array.from(room.participants.values())
+            });
+          }
+
+          // Update MySQL entry for the disconnected user status
           await DBParticipant.update(
             { status: 'DISCONNECTED' },
             { where: { roomId, userId: user.id } }
