@@ -10,5 +10,6 @@ router.get('/', authMiddleware, roomController.list);
 router.get('/:roomId', authMiddleware, roomController.getDetails);
 router.get('/:roomId/chat', authMiddleware, roomController.getChatHistory);
 router.get('/:roomId/logs', authMiddleware, roomController.getPlaybackLogs);
+router.delete('/:roomId', authMiddleware, roomController.remove);
 
 module.exports = router;
