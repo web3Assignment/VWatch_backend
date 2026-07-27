@@ -247,6 +247,38 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "AI Chatbot",
+      "item": [
+        {
+          "name": "Chat with AI",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Who is the CTO of WEB 3 TASK?\",\n  \"history\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/chat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "chat"
+              ]
+            },
+            "description": "Send a message to the AI Chatbot"
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "auth": {
