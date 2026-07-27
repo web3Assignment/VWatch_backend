@@ -1,10 +1,23 @@
 const authService = require('../services/authService.js');
 const logger = require('../utilities/logger.js');
 
+const sendOtp = async (req, res) => {
+  try {
+    const { emailAddress } = req.body;
+    const result = await authService.sendOtp(emailAddress);
+    
+    logger.info(`"authController.js","sendOtp()","Verification OTP sent to: ${emailAddress}"`);
+    return res.status(200).json({ success: true, message: 'Verification OTP sent successfully.', data: result });
+  } catch (error) {
+    logger.error(`"authController.js","sendOtp()","Error: ${error.message}"`);
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 const signUp = async (req, res) => {
   try {
-    const { username, emailAddress, password } = req.body;
-    const result = await authService.registerUser(username, emailAddress, password);
+    const { username, emailAddress, password, otp } = req.body;
+    const result = await authService.registerUser(username, emailAddress, password, otp);
     
     logger.info(`"authController.js","signUp()","User registered: ${emailAddress}"`);
     return res.status(201).json({ success: true, data: result });
@@ -46,6 +59,7 @@ const getMe = async (req, res) => {
 };
 
 module.exports = {
+  sendOtp,
   signUp,
   login,
   getMe

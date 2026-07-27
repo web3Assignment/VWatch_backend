@@ -3,6 +3,7 @@ const Room = require('./room.model.js');
 const Participant = require('./participant.model.js');
 const ChatMessage = require('./chatMessage.model.js');
 const PlaybackLog = require('./playbackLog.model.js');
+const Otp = require('./otp.model.js');
 
 // User & Room (Host relation)
 User.hasMany(Room, { foreignKey: 'hostId', as: 'hostedRooms', onDelete: 'CASCADE' });
@@ -37,5 +38,6 @@ module.exports = {
   Room,
   Participant,
   ChatMessage,
-  PlaybackLog
+  PlaybackLog,
+  Otp
 };

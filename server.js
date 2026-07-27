@@ -2,6 +2,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const app = require('./app.js');
 const sequelize = require('./src/config/sequelize.js');
+// Ensure all database models are loaded and registered
+require('./src/models/index.js');
 const registerSocketHandlers = require('./src/websockets/socketHandlers.js');
 const logger = require('./src/utilities/logger.js');
 

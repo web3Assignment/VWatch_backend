@@ -2,8 +2,11 @@ const express = require('express');
 const roomController = require('../../controllers/roomController.js');
 const authMiddleware = require('../../middlewares/auth.js');
 const { createRoomValidation } = require('../../validations/room.validation.js');
+const { standardLimiter } = require('../../middlewares/rateLimiter.js');
 
 const router = express.Router();
+
+router.use(standardLimiter);
 
 router.post('/', authMiddleware, createRoomValidation, roomController.create);
 router.get('/', authMiddleware, roomController.list);
