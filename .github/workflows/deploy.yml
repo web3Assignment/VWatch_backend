@@ -68,7 +68,7 @@ jobs:
           # Pull latest changes
           git fetch origin
           git checkout main
-          git pull origin main
+          git reset --hard origin/main
 
           # Install new dependencies
           npm install
