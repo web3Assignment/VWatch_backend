@@ -15,7 +15,7 @@ const registerSocketHandlers = (io) => {
         return next(new Error('Authentication token required.'));
       }
       
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretwatchpartykey');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await User.findByPk(decoded.id);
       
       if (!user) {
