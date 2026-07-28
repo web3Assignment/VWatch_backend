@@ -278,6 +278,89 @@ const registerSocketHandlers = (io) => {
       }
     });
 
+    // Event: Transfer Host (Host only)
+    socket.on('transfer_host', async ({ targetUserId }) => {
+      try {
+        // Debug: log immediately to ensure event reached the backend
+        logger.info(`"socketHandlers.js","transfer_host","DEBUG Event Received! targetUserId=${targetUserId} socket.roomId=${socket.roomId} socket.id=${socket.id}"`);
+
+        const roomId = socket.roomId;
+        if (!roomId) {
+          logger.warn(`"socketHandlers.js","transfer_host","WARNING: socket.roomId is undefined! The user hasn't joined a room yet."`);
+          socket.emit('error_event', { message: 'You must be in a room to do this.' });
+          return;
+        }
+
+        const room = roomManager.getRoom(roomId);
+
+        logger.info(`"socketHandlers.js","transfer_host","DEBUG roomId=${roomId} room.hostId=${room?.hostId} (type:${typeof room?.hostId}) user.id=${user.id} (type:${typeof user.id}) targetUserId=${targetUserId} (type:${typeof targetUserId})"`);
+
+        // Normalize to string for safe comparison (Sequelize may return int vs string)
+        if (!room || String(room.hostId) !== String(user.id)) {
+          socket.emit('error_event', { message: 'Permission Denied: Only the current Host can transfer ownership.' });
+          return;
+        }
+
+        if (String(targetUserId) === String(user.id)) {
+          socket.emit('error_event', { message: 'You cannot transfer host ownership to yourself.' });
+          return;
+        }
+
+        // Normalize targetUserId to match the Map key type
+        const normalizedTargetId = [...room.participants.keys()].find(
+          (key) => String(key) === String(targetUserId)
+        );
+
+        if (!normalizedTargetId) {
+          socket.emit('error_event', { message: 'Participant not found in active session.' });
+          return;
+        }
+
+        const targetParticipant = room.getParticipant(normalizedTargetId);
+        if (!targetParticipant) {
+          socket.emit('error_event', { message: 'Participant not found in active session.' });
+          return;
+        }
+
+        // Demote current host → PARTICIPANT in-memory
+        const normalizedCurrentId = [...room.participants.keys()].find(
+          (key) => String(key) === String(user.id)
+        );
+        const currentHost = normalizedCurrentId ? room.getParticipant(normalizedCurrentId) : null;
+        if (currentHost) currentHost.updateRole(Role.PARTICIPANT);
+
+        // Promote target → HOST in-memory; store normalized key as new hostId
+        targetParticipant.updateRole(Role.HOST);
+        room.hostId = normalizedTargetId;
+
+        // Persist both role changes and new hostId to DB
+        await DBRoom.update(
+          { hostId: normalizedTargetId },
+          { where: { id: roomId } }
+        );
+        await DBParticipant.update(
+          { role: Role.PARTICIPANT },
+          { where: { roomId, userId: user.id } }
+        );
+        await DBParticipant.update(
+          { role: Role.HOST },
+          { where: { roomId, userId: normalizedTargetId } }
+        );
+
+        logger.info(`"socketHandlers.js","transfer_host","Room ${roomId}: Host transferred from User ${user.username} (${user.id}) to User ID ${normalizedTargetId}"`);
+
+        // Broadcast the host change to everyone in the room
+        io.to(roomId).emit('host_transferred', {
+          newHostId: normalizedTargetId,
+          previousHostId: user.id,
+          participants: Array.from(room.participants.values())
+        });
+
+      } catch (error) {
+        logger.error(`"socketHandlers.js","transfer_host","Error: ${error.message}"`);
+      }
+    });
+
     // Event: Remove Participant (Host only)
     socket.on('remove_participant', async ({ targetUserId }) => {
       try {
