@@ -49,15 +49,32 @@ Ensure the package is set to `"type": "module"` to support `import/export` state
 ```
 
 ### 1.2 Environment Variables (`.env`)
-Configure local database credentials and JWT security values:
+Configure local database credentials, JWT security values, and third-party APIs (like SMTP and GROQ):
 ```env
 PORT=5000
-DATABASE_HOST=localhost
-DATABASE_PORT=3306
-DATABASE_USER=root
-DATABASE_PASSWORD=your_password
-DATABASE_NAME=watch_party_db
+NODE_ENV=development
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASS=your_password
+DB_NAME=watch_party_db
+
+# JWT & Security
 JWT_SECRET=super_secret_jwt_sign_key
+saltRounds=10
+
+# Third-Party APIs
+GROQ_API_KEY=your_groq_api_key_here
+
+# SMTP Configuration (For Emails)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+SMTP_FROM="VWatch Support" <your_email@gmail.com>
 ```
 
 ---
@@ -415,3 +432,85 @@ export function registerSocketHandlers(io) {
   });
 }
 ```
+
+---
+
+## 5. Security: API Rate Limiter
+
+To protect the API from DDoS attacks, brute-force attempts, and abuse, a robust API Rate Limiter is implemented using `express-rate-limit`.
+
+### Implementation
+The rate limiter is typically applied globally or on specific high-risk endpoints (like authentication/OTP routes).
+
+```javascript
+import rateLimit from 'express-rate-limit';
+
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  max: 100, // Limit each IP to 100 requests per window
+  standardHeaders: true, 
+  legacyHeaders: false, 
+  message: {
+    status: 429,
+    message: 'Too many requests from this IP, please try again after 15 minutes.'
+  }
+});
+```
+
+---
+
+## 6. AI-Powered Chatbot Integration
+
+The backend supports an AI-powered Chatbot (using the GROQ API and LLaMA models) to assist users during their watch parties, answer questions, or summarize video content.
+
+### Implementation Setup
+The chatbot service parses the user's message, builds a context-aware system prompt, and communicates with the GROQ LLM API.
+
+```javascript
+import Groq from 'groq-sdk';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+export const getChatbotResponse = async (userMessage) => {
+  try {
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant in a YouTube Watch Party.' },
+        { role: 'user', content: userMessage }
+      ],
+      model: 'llama3-8b-8192',
+    });
+    return chatCompletion.choices[0]?.message?.content || "";
+  } catch (error) {
+    console.error('Groq API Error:', error);
+    throw new Error('Failed to fetch AI response');
+  }
+};
+```
+
+---
+
+## 7. Key Dependencies & Utilities
+
+The backend architecture utilizes several essential NPM packages to handle validation, logging, and security.
+
+### 7.1 Schema Validation (`joi`)
+All incoming HTTP requests (like authentication and user profile updates) pass through a validation layer before hitting the controller. We use `joi` to define strict schemas.
+
+* **Why it's used**: Prevents malformed data, enforces password strength, and sanitizes input to mitigate injection attacks.
+* **Example Usage**: `src/validations/auth.validation.js` validates emails and passwords using `Joi.string().email()`.
+
+### 7.2 Advanced Logging (`winston` & `winston-daily-rotate-file`)
+Instead of standard `console.log`, the application uses `winston` for robust logging. 
+* **Why it's used**: It allows us to format logs, define severity levels (Info, Error, Warn), and automatically write logs to files that rotate daily using `winston-daily-rotate-file`.
+* **Example Usage**: All critical errors and socket events are captured and saved to disk (e.g., `watch-party-logs/`) for debugging in production without losing context.
+
+### 7.3 API Documentation (`swagger-jsdoc` & `swagger-ui-express`)
+* **Why it's used**: To automatically generate an interactive, visual API playground from our code configuration. 
+* **Example Usage**: Accessible via the `/api-docs` endpoint on the live server.
+
+### 7.4 Security Modules (`helmet` & `bcrypt`)
+* **`helmet`**: Sets critical HTTP headers out-of-the-box (like X-XSS-Protection and Content-Security-Policy) to shield the Express app from well-known web vulnerabilities.
+* **`bcrypt`**: Safely hashes user passwords with a salt before saving them to the MySQL database, ensuring zero plain-text leaks.
